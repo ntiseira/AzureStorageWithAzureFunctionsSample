@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
+using Microsoft.Azure.CosmosDB.Table;
 using NUnit.Framework;
 using OrdersManager.Api.Controllers;
 using OrdersManager.Cloud;
@@ -21,22 +22,53 @@ namespace OrdersManager.Test
         {
             var repo = UnityConfig.Resolve<ITableStorageRepository<Order>>();
 
-            var orderController = UnityConfig.Resolve<OrderController>();
+            //var orderController = UnityConfig.Resolve<OrderController>();
 
-            BaseCriteriaDTO criteria = new BaseCriteriaDTO
+            //BaseCriteriaDTO criteria = new BaseCriteriaDTO
+            //{
+            //    Filter = "",
+            //    OrderAsc = true,
+            //    OrderBy = "",
+            //    PageNumber = 1
+            //};
+
+            //var postResult = orderController.PostGetOrders(criteria).Result;
+
+            //var listOrders = postResult as OkNegotiatedContentResult<PagedListDTO<OrderDTO>>;
+
+            Expression<Func<Order, bool>> filterExpression = x => x.Id != "0";
+
+            string filter = CreateFilterTableQuery("Smith");
+
+            var list = repo.ExecuteSimpleQuery("demo8d865", filter);
+
+
+           // Assert.IsTrue(listOrders.Content.TotalItems > 0);
+        }
+
+        private string CreateFilterTableQuery(string pfilter)
+        {
+            string filter = "";
+
+            Order order = new Order();
+            var orderPropertyInfo = order.GetPropertiesOrder();
+
+
+
+            foreach (var item in orderPropertyInfo)
             {
-                Filter = "",
-                OrderAsc = true,
-                OrderBy = "",
-                PageNumber = 1
-            };
+                if (filter != string.Empty)
+                {
+                    filter = TableQuery.CombineFilters(filter, TableOperators.Or, TableQuery.GenerateFilterCondition(item.Name, QueryComparisons.Equal, pfilter));
+                }
+                else
+                {
+                    filter = TableQuery.GenerateFilterCondition(item.Name, QueryComparisons.Equal, pfilter);
+                }
+            }
 
-            var postResult = orderController.PostGetOrders(criteria).Result;
+            return filter;
 
-            var listOrders = postResult as OkNegotiatedContentResult<PagedListDTO<OrderDTO>>;
-
-
-            Assert.IsTrue(listOrders.Content.TotalItems > 0);
         }
 
         [Test]

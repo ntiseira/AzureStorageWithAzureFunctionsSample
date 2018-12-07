@@ -1,4 +1,5 @@
-﻿using OrdersManager.Cloud.Helper;
+﻿using Microsoft.Azure.CosmosDB.Table;
+using OrdersManager.Cloud.Helper;
 using OrdersManager.Cloud.Interfaces;
 using OrdersManager.Domain.DTOs;
 using OrdersManager.Domain.Entities;
@@ -55,60 +56,59 @@ namespace OrdersManager.Services
 
         public Task<PagedListDTO<OrderDTO>> GetOrders(BaseCriteriaDTO criteria)
         {
-            ////PageSize
-            //int pageSize = Convert.ToInt32(ConfigurationManager.AppSettings["pageSize"].ToString());
+            //PageSize
+            int pageSize = Convert.ToInt32(ConfigurationManager.AppSettings["pageSize"].ToString());
 
-            ////filter (expression in DB)
-            //Expression<Func<Order, bool>> filterExpression = x => x.Id  != "0";
+            //filter (expression in DB)
+            Expression<Func<Order, bool>> filterExpression = x => x.Id != "0";
 
-            ////Azure cosmos db not support method toString, and we use the next Workarround
-            //int filterAmount = 0;
-            //int.TryParse(criteria.Filter, out filterAmount);
+            //Azure cosmos db not support method toString, and we use the next Workarround
+            int filterAmount = 0;
+            int.TryParse(criteria.Filter, out filterAmount);
 
-            //if (!string.IsNullOrWhiteSpace(criteria.Filter))
+            if (!string.IsNullOrWhiteSpace(criteria.Filter))
 
-            //    filterExpression = filterExpression.Join(
-            //             x =>
-            //            (x.OrderCustomer != null && x.OrderCustomer.ContactName.ToUpper().Contains(criteria.Filter.ToUpper())) ||
-            //             x.ShipAdress.ToUpper().Contains(criteria.Filter.ToUpper())
-            //            || x.ShipCity.ToUpper().Contains(criteria.Filter.ToUpper())
-            //            || x.ShipCountry.ToUpper().Contains(criteria.Filter.ToUpper())
-            //            || x.ShipPostalCode.ToUpper().Contains(criteria.Filter.ToUpper())
-            //            || x.TotalAmount == filterAmount
-            //            );
+                filterExpression = filterExpression.Join(
+                         x =>
+                        (x.OrderCustomer != null && x.OrderCustomer.ContactName.ToUpper().Contains(criteria.Filter.ToUpper())) ||
+                         x.ShipAdress.ToUpper().Contains(criteria.Filter.ToUpper())
+                        || x.ShipCity.ToUpper().Contains(criteria.Filter.ToUpper())
+                        || x.ShipCountry.ToUpper().Contains(criteria.Filter.ToUpper())
+                        || x.ShipPostalCode.ToUpper().Contains(criteria.Filter.ToUpper())
+                        || x.TotalAmount == filterAmount
+                        );
 
-            ////order by
-            //Expression<Func<Order, object>>[] orderByExpressions = this.GetOrderByExpressions_Orders(criteria.OrderBy);
-
-
-            //Tuple<List<Order>, int> q = repositoryOrders.GetAllAsync(criteria.PageNumber,
-            //    pageSize, filterExpression, criteria.OrderAsc, orderByExpressions);
-
-            ////get total entities
-            //int totalItems = q.Item2;
+            //order by
+            Expression<Func<Order, object>>[] orderByExpressions = this.GetOrderByExpressions_Orders(criteria.OrderBy);
 
 
-            ////parse to DTO
-            //List<OrderDTO> items = q.Item1.ToList().Select(m => new OrderDTO
-            //{
-            //    Id = Convert.ToInt32(m.Id),
-            //    Created_At = m.Created_At,
-            //    //OrderCustomer = m.OrderCustomer,
-            //    Details = m.OrdersDetails.Where(x => x != null).Select(a => new OrderDetailDTO
-            //    { Id = Convert.ToInt32(a.OrderDetailId), OrderId = Convert.ToInt32(m.Id), Discount = a.Discount, ProductId = a.ProductId, ProductName = (a.ProductSold != null ? a.ProductSold.Name : ""), Quantity = a.Quantity }).ToList(),
-            //    shipAdress = m.ShipAdress,
-            //    shipCity = m.ShipCity,
-            //    shipCountry = m.ShipCountry,
-            //    shipPostalCode = m.ShipPostalCode,
-            //    TotalAmount = m.TotalAmount
-            //}).ToList();
+            Tuple<List<Order>, int> q = repositoryOrders.GetAllAsync(criteria.PageNumber,
+                pageSize, "", criteria.OrderAsc, orderByExpressions);
+
+            //get total entities
+            int totalItems = q.Item2;
 
 
-            //var res = new PagedListDTO<OrderDTO>(totalItems, pageSize, items, criteria.PageNumber);
+            //parse to DTO
+            List<OrderDTO> items = q.Item1.ToList().Select(m => new OrderDTO
+            {
+                Id = Convert.ToInt32(m.Id),
+                Created_At = m.Created_At,
+                //OrderCustomer = m.OrderCustomer,
+                Details = m.OrdersDetails.Where(x => x != null).Select(a => new OrderDetailDTO
+                { Id = Convert.ToInt32(a.OrderDetailId), OrderId = Convert.ToInt32(m.Id), Discount = a.Discount, ProductId = a.ProductId, ProductName = (a.ProductSold != null ? a.ProductSold.Name : ""), Quantity = a.Quantity }).ToList(),
+                shipAdress = m.ShipAdress,
+                shipCity = m.ShipCity,
+                shipCountry = m.ShipCountry,
+                shipPostalCode = m.ShipPostalCode,
+                TotalAmount = m.TotalAmount
+            }).ToList();
 
-            //return Task.FromResult(res);
 
-            throw new NotImplementedException();
+            var res = new PagedListDTO<OrderDTO>(totalItems, pageSize, items, criteria.PageNumber);
+
+            return Task.FromResult(res);
+             
 
         }
 
@@ -117,6 +117,33 @@ namespace OrdersManager.Services
 
 
         #region Private Methods
+
+
+        private string CreateFilterTableQuery(string pfilter, string value)
+        {
+            string filter = "";
+
+            Order order = new Order();
+            var orderPropertyInfo = order.GetPropertiesOrder();
+
+          
+
+            foreach (var item in orderPropertyInfo)
+            {
+                if (filter != string.Empty)
+                {
+                    filter = TableQuery.CombineFilters(filter, TableOperators.Or, TableQuery.GenerateFilterCondition(item.Name, QueryComparisons.Equal, value));
+                }
+                else
+                {
+                    filter = TableQuery.GenerateFilterCondition(item.Name, QueryComparisons.Equal, value);
+                }
+            }
+
+            return filter;
+
+        }
+
 
         private Expression<Func<Order, object>>[] GetOrderByExpressions_Orders(string orderBy)
         {

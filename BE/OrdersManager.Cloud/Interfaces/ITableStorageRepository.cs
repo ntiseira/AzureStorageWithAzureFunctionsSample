@@ -14,9 +14,9 @@ namespace OrdersManager.Cloud.Interfaces
 
         Task<T> CreateOrUpdateItemAsync(CloudTable table, T item);
 
-        Task<List<T>> ExecuteSimpleQuery(string databaseName, string collectionName, Expression<Func<T, bool>> expression);
+        List<Domain.Entities.Order> ExecuteSimpleQuery(string tableName, string filters);
 
-        Tuple<List<T>, int> GetAllAsync(int pageNumber, int pageSize, Expression<Func<T, bool>> filter = null, bool orderAsc = false,
+        Tuple<List<T>, int> GetAllAsync(int pageNumber, int pageSize, string filter, bool orderAsc = false,
             params Expression<Func<T, object>>[] orderByExpressions);
 
     }

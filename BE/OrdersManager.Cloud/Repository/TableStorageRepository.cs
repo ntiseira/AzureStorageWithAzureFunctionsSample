@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.CosmosDB.Table;
+﻿using Microsoft.Azure;
+using Microsoft.Azure.CosmosDB.Table;
 using Microsoft.Azure.Storage;
 using OrdersManager.Cloud.Interfaces;
 using System;
@@ -39,12 +40,79 @@ namespace OrdersManager.Cloud.Repository
             }
         }
 
-        public Task<List<T>> ExecuteSimpleQuery(string databaseName, string collectionName, Expression<Func<T, bool>> expression)
+        /// <summary>
+        /// Validate the connection string information in app.config and throws an exception if it looks like 
+        /// the user hasn't updated this to valid values. 
+        /// </summary>
+        /// <param name="storageConnectionString">Connection string for the storage service or the emulator</param>
+        /// <returns>CloudStorageAccount object</returns>
+        public static CloudStorageAccount CreateStorageAccountFromConnectionString(string storageConnectionString)
         {
-            throw new NotImplementedException();
+            CloudStorageAccount storageAccount;
+            try
+            {
+                storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid storage account information provided. Please confirm the AccountName and AccountKey are valid in the app.config file - then restart the application.");
+                throw;
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Invalid storage account information provided. Please confirm the AccountName and AccountKey are valid in the app.config file - then restart the sample.");
+                Console.ReadLine();
+                throw;
+            }
+
+            return storageAccount;
         }
 
-        public Tuple<List<T>, int> GetAllAsync(int pageNumber, int pageSize, Expression<Func<T, bool>> filter = null, bool orderAsc = false, params Expression<Func<T, object>>[] orderByExpressions)
+        public List<Domain.Entities.Order> ExecuteSimpleQuery(string tableName, string filters)
+        {
+            try
+            {
+                // Retrieve storage account information from connection string.
+                CloudStorageAccount storageAccount = CreateStorageAccountFromConnectionString(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+
+                // Create a table client for interacting with the table service
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+
+                // Create a table client for interacting with the table service 
+                CloudTable table = tableClient.GetTableReference(tableName);
+
+                TableContinuationToken token = null;
+                var entities = new List<Domain.Entities.Order>();
+                do
+                {                    
+                    var queryResult = table.ExecuteQuerySegmented(new TableQuery<Domain.Entities.Order>().Where(filters), token);
+                    entities.AddRange(queryResult.Results);
+                    token = queryResult.ContinuationToken;
+                } while (token != null);
+
+          
+                return entities.ToList();
+
+
+            }
+            catch (StorageException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.ReadLine();
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+        }
+
+
+
+
+
+        public Tuple<List<T>, int> GetAllAsync(int pageNumber, int pageSize, string filter, bool orderAsc = false, params Expression<Func<T, object>>[] orderByExpressions)
         {
             throw new NotImplementedException();
         }
