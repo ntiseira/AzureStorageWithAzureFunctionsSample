@@ -7,20 +7,12 @@ using System.Threading.Tasks;
 
 namespace ChatRoom.Cloud.Interfaces
 {
-    public interface IQueueStorageRepository
-        //<T> where T : class
+    public interface IQueueStorageRepository        
     {
         Task AddMessageAsync(string message);
 
         Task DeleteMessageAsync(string message);
-        //Task<T> GetItemAsync(string id);
-
-        //Task<T> CreateOrUpdateItemAsync(CloudTable table, T item);
-
-        //List<Domain.Entities.Order> ExecuteSimpleQuery(string tableName, string filters);
-
-        //Tuple<List<T>, int> GetAllAsync(int pageNumber, int pageSize, string filter, bool orderAsc = false,
-        //    params Expression<Func<T, object>>[] orderByExpressions);
+        
 
     }
 }

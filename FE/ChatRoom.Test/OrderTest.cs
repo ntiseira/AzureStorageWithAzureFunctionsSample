@@ -6,7 +6,6 @@ using System.Web.Http.Results;
 using NUnit.Framework;
  using ChatRoom.Cloud;
 using ChatRoom.Cloud.Interfaces;
-using ChatRoom.Domain.DTOs;
 using ChatRoom.Domain.Entities;
 using ChatRoom.Services;
 

@@ -11,11 +11,7 @@ using System.Threading.Tasks;
 
 namespace ChatRoom.Cloud.Repository
 {
-    public class QueueStorageRepository
-        //<T> 
-        : IQueueStorageRepository
-    //<T>
-    //where T :   TableEntity
+    public class QueueStorageRepository   : IQueueStorageRepository   
     {
 
         /// <summary>
