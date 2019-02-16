@@ -1,0 +1,20 @@
+﻿<Window x:Class="ChatRoom.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" 
+         WindowStartupLocation="CenterScreen"
+        Title="Login Chat room" Height="378.496" Width="371.928" Loaded="Window_Loaded">
+    <Grid>
+        <Button x:Name="button" Content="Login" HorizontalAlignment="Left" Margin="128,208,0,0"
+                VerticalAlignment="Top" Width="119" Height="41"
+                 Command="{Binding ChatRoomCommand}"
+                />
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="25" Margin="106,147,0,0"
+             TextWrapping="Wrap" Text="{Binding AliasUser}" VerticalAlignment="Top" Width="168"/>
+        <Label x:Name="label" Content="Insert alias" HorizontalAlignment="Left" 
+               Margin="106,97,0,0" VerticalAlignment="Top" Height="37" Width="168"
+                TextElement.FontSize="20" />
+    </Grid>
+</Window>
