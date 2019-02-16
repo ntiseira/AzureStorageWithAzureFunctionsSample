@@ -13,14 +13,16 @@ namespace ChatParserFunction.Model
         {
         }
 
-
         public UserEntity(string typeChat, string userName, string message)
         {
             PartitionKey = Guid.NewGuid().ToString();
             TypeChat = typeChat;
             RowKey = userName;
             Message = message;
+            MessageChecked = false;
         }
+
+        public bool MessageChecked { get; set; }
 
         public string TypeChat { get; set; }
         public string Message { get; set; }
