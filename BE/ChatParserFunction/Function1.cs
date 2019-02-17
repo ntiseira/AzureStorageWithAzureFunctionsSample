@@ -20,14 +20,9 @@ namespace ChatParserFunction
            
 
                 UserEntity userEntity = new UserEntity(splitStrings[0], splitStrings[1], splitStrings[2]);
-
-                string tableName = "UsersChat";
-
-                // Create or reference an existing table
-                CloudTable table = CommonTableStorage.CreateTableAsync(tableName).Result;
-
+  
                 //Insert entity
-                var result = CommonTableStorage.InsertOrMergeEntityAsync(table, userEntity).Result;
+                var result = CommonTableStorage.InsertOrMergeEntityAsync(userEntity).Result;
             }
         }
 

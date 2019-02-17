@@ -9,7 +9,7 @@ namespace ChatRoom.Cloud.Interfaces
 {
    public interface ITableStorageRepository
    {
-        Task<List<UserEntity>> GetNewsAsync();
+        Task<List<UserEntity>> GetNewsAsync(string alias);
 
     }
 }

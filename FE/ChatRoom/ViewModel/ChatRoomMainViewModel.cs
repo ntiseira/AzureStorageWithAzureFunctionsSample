@@ -1,4 +1,5 @@
 ﻿using ChatRoom.Commands;
+using ChatRoom.Extensions;
 using ChatRoom.Services;
 using ChatRoom.Services.Interfaces;
 using System;
@@ -27,7 +28,7 @@ namespace ChatRoom.ViewModel
         public ChatRoomMainViewModel(Window main , string aliasUser)
         {
             CurrentWindow = main;
-            ListOfItems = new ObservableCollection<object>();
+            ListOfItems = new ObservableCollection<string>();
             this.aliasUser = aliasUser;
             GetMessages();
         }
@@ -48,19 +49,35 @@ namespace ChatRoom.ViewModel
 
 
         private void GetMessages()
-        {            
+        {
+            //INSTANCIANDO EL TIMER CON LA CLASE DISPATCHERTIMER 
+            DispatcherTimer dispathcer = new DispatcherTimer();
 
-            var backgroundWorker = new BackgroundWorker
+            //EL INTERVALO DEL TIMER ES DE 0 HORAS,0 MINUTOS Y 1 SEGUNDO 
+            dispathcer.Interval = new TimeSpan(0, 0, 1);
+
+            //EL EVENTO TICK SE SUBSCRIBE A UN CONTROLADOR DE EVENTOS UTILIZANDO LAMBDA 
+            dispathcer.Tick += (s, a) =>
             {
-                 WorkerReportsProgress = true,
-                WorkerSupportsCancellation = true
+                //AQUI VA LO QUE QUIERES QUE HAGA CADA 1 SEGUNDO 
+                var backgroundWorker = new BackgroundWorker
+                {
+                    WorkerReportsProgress = true,
+                    WorkerSupportsCancellation = true
+                };
+                backgroundWorker.DoWork += new DoWorkEventHandler(DoLongWork);
+                backgroundWorker.RunWorkerAsync(Dispatcher.CurrentDispatcher);
+
+                backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(
+                    ProgressChanged);
+
+
             };
-            backgroundWorker.DoWork += new DoWorkEventHandler(DoLongWork);
-            backgroundWorker.RunWorkerAsync(Dispatcher.CurrentDispatcher);
+            dispathcer.Start();
 
-            backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(
-                ProgressChanged);     
 
+
+        
         }
 
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -76,9 +93,9 @@ namespace ChatRoom.ViewModel
                 "Operation has either completed successfully or has been cancelled");
         }
 
-        private ObservableCollection<object> listOfItems;
+        private ObservableCollection<string> listOfItems;
 
-        public ObservableCollection<object> ListOfItems
+        public ObservableCollection<string> ListOfItems
         {
             get
             {
@@ -102,29 +119,18 @@ namespace ChatRoom.ViewModel
         /// <param name="e"></param>
         public void DoLongWork(object sender, DoWorkEventArgs e)
         {
-           // Dispatcher dispatcher = e.Argument as Dispatcher; // this is right ui dispatcher
-
-            CurrentWindow.Dispatcher.BeginInvoke((Action)delegate () {
-                var list = ListOfItems;
-                 ListOfItems = list;
-            });
-
-
-            while (true)
-            {
-               // var worker = sender as BackgroundWorker;
-                Console.WriteLine("Operation has started");
-
-                //Call to get new messages
-                Thread.Sleep(1000);
-
+      
                 CurrentWindow.Dispatcher.BeginInvoke((Action)delegate () {
                     var list = ListOfItems;
-                     ListOfItems = list;
-                });
+                    var listUsers = this._ChatRoomService.GetNewsAsync(aliasUser).Result;
 
+
+                    foreach (var item in listUsers)
+                    {
+                        ListOfItems.Add(item.UserName + ":" + item.Message);
+                    }
+                });
              
-            }
         }
 
         private string textInserted;

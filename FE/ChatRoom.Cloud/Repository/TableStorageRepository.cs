@@ -1,5 +1,6 @@
 ﻿using ChatRoom.Cloud.Interfaces;
 using ChatRoom.Domain.Entities;
+using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
@@ -18,7 +19,7 @@ namespace ChatRoom.Cloud.Repository
         /// </summary>
         /// <param name="storageConnectionString">Connection string for the storage service or the emulator</param>
         /// <returns>CloudStorageAccount object</returns>
-        public static CloudStorageAccount CreateStorageAccountFromConnectionString(string storageConnectionString)
+        public  CloudStorageAccount CreateStorageAccountFromConnectionString(string storageConnectionString)
         {
             CloudStorageAccount storageAccount;
             try
@@ -51,7 +52,7 @@ namespace ChatRoom.Cloud.Repository
         /// <param name="table">The sample table name</param>
         /// <param name="entity">The entity to insert or merge</param>
         /// <returns>A Task object</returns>
-        public static async Task<UserEntity> UpdateEntityAsync(CloudTable table, UserEntity entity)
+        public  async Task<UserEntity> UpdateEntityAsync(CloudTable table, UserEntity entity)
         {
             if (entity == null)
             {
@@ -78,7 +79,7 @@ namespace ChatRoom.Cloud.Repository
         }
 
 
-        private static async Task BatchInsertOfCustomerEntitiesAsync(CloudTable table , List<UserEntity>listUserEntities)
+        private  async Task BatchInsertOfCustomerEntitiesAsync(CloudTable table , List<UserEntity>listUserEntities)
         {
             try
             {
@@ -88,7 +89,7 @@ namespace ChatRoom.Cloud.Repository
                 // The following code  generates test data for use during the query samples.  
                foreach(var item in listUserEntities)
                 {
-                    batchOperation.InsertOrMerge(item);                    
+                    batchOperation.Replace(item);                    
                 }
 
                 // Execute the batch operation.
@@ -115,25 +116,25 @@ namespace ChatRoom.Cloud.Repository
         /// <param name="table">Sample table name</param>
         /// <param name="rowKey">Row key - i.e., first name</param>
         /// <returns>A Task object</returns>
-        public static async Task<List<UserEntity>> RetrieveEntitiesUsingPointQueryAsync(CloudTable table, string alias)
+        public  List<UserEntity> RetrieveEntitiesUsingPointQueryAsync(CloudTable table, string alias)
         {
             try
             {
                 // Create the range query using the fluid API 
                 TableQuery<UserEntity> rangeQuery = new TableQuery<UserEntity>().Where(
                     //Row key defined the user name in table storage created
-                    TableQuery.CombineFilters(
+                    TableQuery.CombineFilters(      
                             TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, alias),
                             TableOperators.And,        
                             //We want get the messages not read
-                                TableQuery.GenerateFilterCondition("MessageChecked", QueryComparisons.Equal, "false")
+                                TableQuery.GenerateFilterConditionForBool("MessageChecked", QueryComparisons.Equal, false)
                             ));
 
                 TableContinuationToken token = null;
                 var entities = new List<UserEntity>();
                 do
                 {
-                    var queryResult = await table.ExecuteQuerySegmentedAsync(rangeQuery, token);
+                    var queryResult = table.ExecuteQuerySegmentedAsync(rangeQuery, token).Result;
                     entities.AddRange(queryResult.Results);
                     token = queryResult.ContinuationToken;
                 } while (token != null);
@@ -149,10 +150,56 @@ namespace ChatRoom.Cloud.Repository
             }
         }
 
-
-        public Task<List<UserEntity>> GetNewsAsync()
+        public  TableEntity Merge(CloudTable table , TableEntity entity)   
         {
-            throw new NotImplementedException();
+
+            // Create the InsertOrReplace table operation
+            TableOperation insertOrMergeOperation = TableOperation.Replace(entity);
+
+            // Execute the operation.
+            TableResult result =  table.ExecuteAsync(insertOrMergeOperation).Result;
+            UserEntity insertedCustomer = result.Result as UserEntity;
+
+            return insertedCustomer; 
         }
+
+
+        private CloudTable MakeTableReference()
+        {
+            string tableName = "UsersChat";
+
+            // Retrieve storage account information from connection string.
+
+            var tableClient = CreateStorageAccountFromConnectionString(CloudConfigurationManager.GetSetting("StorageConnectionString")).CreateCloudTableClient();
+
+            // Create a table client for interacting with the table service
+            var tableReference = tableClient.GetTableReference(tableName);
+
+            return tableReference;
+        }
+
+
+        public async Task<List<UserEntity>> GetNewsAsync(string alias)
+        {  
+            // Create a table client for interacting with the table service 
+            CloudTable table = MakeTableReference();
+            
+            List<UserEntity> listUsers = new List<UserEntity>();
+
+            listUsers = this.RetrieveEntitiesUsingPointQueryAsync(table, alias);
+                       
+            if (listUsers.Count > 0)
+            { 
+                 foreach (var item in listUsers)
+                {                    
+                    item.MessageChecked = true;
+                     Merge(table, item);
+                    item.UserName = item.RowKey;
+                }
+            }
+            return listUsers;
+        }
+
+    
     }
 }

@@ -14,7 +14,22 @@ namespace ChatParserFunction
 {
   public  class CommonTableStorage
     {
+        private static CloudTable instance = null;
 
+ 
+        public static CloudTable   CloudTableClient()
+        {
+            if (instance == null)
+            {
+                string tableName = "UsersChat";
+                instance = CreateTableAsync(tableName).Result;
+
+            }            
+
+            return instance;
+        }
+
+     
         /// <summary>
         /// The Table Service supports two main types of insert operations.
         ///  1. Insert - insert a new entity. If an entity already exists with the same PK + RK an exception will be thrown.
@@ -25,7 +40,7 @@ namespace ChatParserFunction
         /// <param name="table">The sample table name</param>
         /// <param name="entity">The entity to insert or merge</param>
         /// <returns>A Task object</returns>
-        public static async Task<UserEntity> InsertOrMergeEntityAsync(CloudTable table, UserEntity entity)
+        public static async Task<UserEntity> InsertOrMergeEntityAsync(UserEntity entity)
         {
             if (entity == null)
             {
@@ -38,7 +53,7 @@ namespace ChatParserFunction
                 TableOperation insertOrMergeOperation = TableOperation.Insert(entity);
 
                 // Execute the operation.
-                TableResult result = await table.ExecuteAsync(insertOrMergeOperation);
+                TableResult result = await CloudTableClient().ExecuteAsync(insertOrMergeOperation);
                 UserEntity insertedCustomer = result.Result as UserEntity;
 
                 return insertedCustomer;

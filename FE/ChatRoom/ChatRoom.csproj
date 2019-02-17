@@ -57,6 +57,7 @@
     </ApplicationDefinition>
     <Compile Include="Commands\DelegateCommand.cs" />
     <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="ViewModel\ChatRoomMainViewModel.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
@@ -104,13 +105,20 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ChatRoom.Domain\ChatRoomManager.Domain.csproj">
+      <Project>{2CDCBA06-E620-4472-8418-13D082488734}</Project>
+      <Name>ChatRoomManager.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ChatRoom.Services\ChatRoomManager.Services.csproj">
       <Project>{ed29d0f0-b423-44c5-80c5-97890aaeb1df}</Project>
       <Name>ChatRoomManager.Services</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -15,7 +15,9 @@ namespace ChatRoom.Services
     public class ChatRoomService : IChatRoomService
     {
 
-        private IQueueStorageRepository  repositoryOrders = new QueueStorageRepository ();
+        private IQueueStorageRepository repositoryQueueStorage = new QueueStorageRepository ();
+        private ITableStorageRepository repositoryTableStoragee = new TableStorageRepository();
+
 
         public ChatRoomService()
         {
@@ -23,22 +25,28 @@ namespace ChatRoom.Services
 
         /// <inheritdoc />
         public ChatRoomService(
-            IQueueStorageRepository repositoryOrders
+            IQueueStorageRepository repositoryQueueStorage
             )
         {
-            this.repositoryOrders = repositoryOrders;
+            this.repositoryQueueStorage = repositoryQueueStorage;
 
         }
 
         public Task AddMessageAsync(string message)
         {
-          return repositoryOrders.AddMessageAsync(message);
+          return repositoryQueueStorage.AddMessageAsync(message);
             
         }
 
         public Task DeleteMessageAsync(string message)
         {
-            return repositoryOrders.DeleteMessageAsync(message);
+            return repositoryQueueStorage.DeleteMessageAsync(message);
+        }
+
+
+        public Task<List<UserEntity>> GetNewsAsync(string alias)
+        {
+            return repositoryTableStoragee.GetNewsAsync(alias);
         }
 
     }

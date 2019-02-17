@@ -23,8 +23,8 @@ namespace ChatRoom.Domain.Entities
         }
 
         public bool MessageChecked { get; set; }
-
         public string TypeChat { get; set; }
+        public string UserName { get; set; }
         public string Message { get; set; }
 
 
