@@ -124,7 +124,7 @@ namespace ChatRoom.Cloud.Repository
                 TableQuery<UserEntity> rangeQuery = new TableQuery<UserEntity>().Where(
                     //Row key defined the user name in table storage created
                     TableQuery.CombineFilters(      
-                            TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, alias),
+                            TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.NotEqual, alias),
                             TableOperators.And,        
                             //We want get the messages not read
                                 TableQuery.GenerateFilterConditionForBool("MessageChecked", QueryComparisons.Equal, false)

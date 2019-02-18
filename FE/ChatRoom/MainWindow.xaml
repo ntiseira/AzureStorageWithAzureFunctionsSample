@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" 
+        mc:Ignorable="d"  
          WindowStartupLocation="CenterScreen"
         Title="Login Chat room" Height="378.496" Width="371.928" Loaded="Window_Loaded">
     <Grid>

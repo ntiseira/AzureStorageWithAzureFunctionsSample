@@ -54,7 +54,7 @@ namespace ChatRoom.ViewModel
 
         public void OpenChatRoomClick()
         {
-            
+            this.CurrentWindow.Hide();
             ChatRoomMain chatRoomMain = new ChatRoomMain(AliasUser);
             chatRoomMain.ShowDialog();
          

@@ -20,6 +20,25 @@ namespace ChatRoom.ViewModel
     {
         public Window CurrentWindow { get; set; }
 
+        private string userLbl;     
+        public string UserLbl
+        {
+            get
+            {
+                return userLbl;
+            }
+            set
+            {
+                if (userLbl != value)
+                {
+                    userLbl = value;
+                    OnPropertyChanged("UserLbl");
+                }
+            }
+        }
+
+
+
         private ICommand sendMessageCommand;
 
         private readonly IChatRoomService _ChatRoomService = new ChatRoomService();
@@ -28,6 +47,7 @@ namespace ChatRoom.ViewModel
         public ChatRoomMainViewModel(Window main , string aliasUser)
         {
             CurrentWindow = main;
+            UserLbl = aliasUser;
             ListOfItems = new ObservableCollection<string>();
             this.aliasUser = aliasUser;
             GetMessages();
@@ -54,7 +74,7 @@ namespace ChatRoom.ViewModel
             DispatcherTimer dispathcer = new DispatcherTimer();
 
             //EL INTERVALO DEL TIMER ES DE 0 HORAS,0 MINUTOS Y 1 SEGUNDO 
-            dispathcer.Interval = new TimeSpan(0, 0, 1);
+            dispathcer.Interval = new TimeSpan(0, 0, 3);
 
             //EL EVENTO TICK SE SUBSCRIBE A UN CONTROLADOR DE EVENTOS UTILIZANDO LAMBDA 
             dispathcer.Tick += (s, a) =>

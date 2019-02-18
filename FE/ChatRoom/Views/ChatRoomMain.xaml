@@ -15,6 +15,8 @@
                Command="{Binding SendMessageCommand}"  VerticalAlignment="Top" Width="100" Height="51"/>
         <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="51" Margin="38,336,0,0" TextWrapping="Wrap"
                  Text="{Binding TextInserted}" VerticalAlignment="Top" Width="495"/>
+        <Label x:Name="label" Content="User logged: " HorizontalAlignment="Left" Margin="84,10,0,0" VerticalAlignment="Top" Width="77"/>
+        <Label x:Name="label1" Content="{Binding UserLbl}" HorizontalAlignment="Left" Margin="161,10,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
